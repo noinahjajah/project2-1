@@ -1,0 +1,101 @@
+.app-header {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 32px 32px 12px;
+  background: #fdfcfc;
+  border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-input {
+  flex: 1;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 156, 172, 0.4);
+  padding: 14px 18px;
+  font-size: 1rem;
+  background: #f8f8fc;
+}
+
+.search-input:focus {
+  outline: 2px solid rgba(75, 108, 250, 0.4);
+}
+
+.search-filter-btn {
+  border: none;
+  background: #111726;
+  color: #fff;
+  border-radius: 14px;
+  padding: 12px 22px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.header-tabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.header-tab {
+  background: transparent;
+  border: 1px solid rgba(17, 23, 38, 0.08);
+  border-radius: 50px;
+  padding: 8px 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.header-tab.active,
+.header-tab:hover {
+  background: #111726;
+  color: #fff;
+  border-color: #111726;
+}
+
+.header-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-profile-info {
+  text-align: right;
+}
+
+.header-profile-name {
+  margin: 0;
+  font-weight: 600;
+}
+
+.header-profile-role {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.header-profile-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: #4b6cfa;
+  color: #fff;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
