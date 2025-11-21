@@ -2,8 +2,8 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
 import AppLayout from './layouts/AppLayOut';
 import Login from './page/Login';
-import JobList from './page/JobList';
-import Dashboard from './page/Dashboard';
+import JobList from './admin/JobList';
+import Dashboard from './admin/Dashboard';
 
 const RedirectToDashboard = () => <Navigate to="/dashboard" replace />;
 
