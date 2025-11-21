@@ -5,6 +5,7 @@
   padding: 32px 32px 12px;
   background: #fdfcfc;
   border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+  border-radius: 32px;
 }
 
 .search-wrapper {
@@ -67,35 +68,5 @@
   border-color: #111726;
 }
 
-.header-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 
-.header-profile-info {
-  text-align: right;
-}
 
-.header-profile-name {
-  margin: 0;
-  font-weight: 600;
-}
-
-.header-profile-role {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #6b7280;
-}
-
-.header-profile-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  background: #4b6cfa;
-  color: #fff;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}

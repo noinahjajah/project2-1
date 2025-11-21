@@ -1,6 +1,6 @@
 import './searchbar.css';
 
-const filters = ['All jobs', 'New', 'In progress', 'Completed'];
+const filters = ['All jobs', 'New', 'In progress', 'Completed', 'Canceled'];
 
 const searchbar = () => {
   return (
@@ -24,14 +24,6 @@ const searchbar = () => {
               {filter}
             </button>
           ))}
-        </div>
-
-        <div className="header-profile">
-          <div className="header-profile-info">
-            <p className="header-profile-name">Alex Morgan</p>
-            <p className="header-profile-role">Project lead</p>
-          </div>
-          <div className="header-profile-avatar">AM</div>
         </div>
       </div>
     </header>

@@ -1,5 +1,6 @@
 import React from 'react';
 import './JobList.css';
+import Searchbar from '../component/searchbar';
 
 const jobStatus = [
   { title: 'New Jobs', color: '#4785FC' },
@@ -55,7 +56,12 @@ const jobs = [
 
 export default function JobList() {
   return (
+    <>
+    <div className=' mb-lg-4'>
+    <Searchbar />
+    </div>
     <section className="joblist-board">
+    
       <div className="board-header">
         <div>
           <p className="board-eyebrow">Overview</p>
@@ -92,5 +98,6 @@ export default function JobList() {
         ))}
       </div>
     </section>
+     </>
   );
 }

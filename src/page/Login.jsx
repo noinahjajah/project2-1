@@ -13,7 +13,6 @@ const Login = () => {
                     <form className="login-form" onSubmit={(e)=>e.preventDefault()}>
                         <input type="text" placeholder="Username" aria-label="username" />
                         <input type="password" placeholder="Password" aria-label="password" />
-
                         <div className="actions">
                             <label style={{display:'flex',alignItems:'center',gap:'8px'}}>
                                 <input type="checkbox" />
