@@ -281,6 +281,16 @@
   color: var(--tech-warning);
 }
 
+.tech-status-badge.success {
+  background: #e8f6ef;
+  color: #15803d;
+}
+
+.tech-status-badge.cancel {
+  background: #f6e7e7;
+  color: #b42318;
+}
+
 .tech-status-badge.danger {
   background: #fdeceb;
   color: var(--tech-danger);

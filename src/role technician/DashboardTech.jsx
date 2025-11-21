@@ -16,7 +16,18 @@ const tasks = [
   { id: 'WO-1060', customer: 'Beta Ltd', due: 'พรุ่งนี้', priority: 'กลาง', status: 'รอส่งหัวหน้า' },
   { id: 'WO-1048', customer: 'Delta Co', due: 'เกินกำหนด 1 วัน', priority: 'สูง', status: 'ค้างส่งมอบ' },
   { id: 'WO-1039', customer: 'Evergreen', due: 'สัปดาห์นี้', priority: 'ต่ำ', status: 'รอเริ่ม' },
+  { id: 'WO-1020', customer: 'GreenTech', due: 'ปิดงานแล้ว', priority: 'ต่ำ', status: 'เสร็จแล้ว' },
+  { id: 'WO-1012', customer: 'Omega Co', due: 'ถูกยกเลิก', priority: 'ต่ำ', status: 'ยกเลิก' },
 ];
+
+const statusClass = (status) => {
+  if (status === 'เสร็จแล้ว') return 'success';
+  if (status === 'รอส่งหัวหน้า' || status === 'รอส่ง') return 'warn';
+  if (status === 'ยกเลิก') return 'cancel';
+  if (status === 'ค้างส่งมอบ' || status === 'กำลังทำ') return 'danger';
+  if (status === 'รอเริ่ม') return 'neutral';
+  return 'neutral';
+};
 
 const recent = [
   {
@@ -109,7 +120,7 @@ export default function TechnicianDashboard() {
                   <p className="tech-task-customer">{task.customer}</p>
                 </div>
                 <div className="tech-task-info">
-                  <span className="tech-status-badge">{task.status}</span>
+                  <span className={`tech-status-badge ${statusClass(task.status)}`}>{task.status}</span>
                   <span className="tech-status-badge neutral">กำหนดส่ง: {task.due}</span>
                   <span className={`tech-status-badge ${task.priority === 'สูง' ? 'danger' : 'neutral'}`}>
                     ความเร่งด่วน: {task.priority}
@@ -134,7 +145,7 @@ export default function TechnicianDashboard() {
                   <p className="tech-reject-note">หมายเหตุ: {item.note}</p>
                 </div>
                 <div className="tech-reject-meta">
-                  <span className="tech-status-badge neutral">สถานะ: {item.status}</span>
+                  <span className={`tech-status-badge ${statusClass(item.status)}`}>สถานะ: {item.status}</span>
                   <span className={`tech-status-badge ${item.urgency === 'สูง' ? 'danger' : 'neutral'}`}>
                     ความเร่งด่วน: {item.urgency}
                   </span>
