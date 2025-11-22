@@ -2,8 +2,10 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import './App.css';
 import AppLayout from './layouts/AppLayOut';
 import Login from './page/Login';
-import JobList from './admin/JobList';
-import Dashboard from './admin/Dashboard';
+import JobList from './role admin/JobList';
+import Dashboard from './role admin/Dashboard';
+import DashboardT from './role technician/DashboardTech';
+
 
 const RedirectToDashboard = () => <Navigate to="/dashboard" replace />;
 
@@ -15,7 +17,7 @@ function App() {
 
         <Route path="/" element={<AppLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="dashboard" element={<DashboardT/>} />
           <Route path="joblist" element={<JobList />} />
         </Route>
         <Route path="*" element={<RedirectToDashboard />} />
