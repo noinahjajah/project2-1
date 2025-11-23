@@ -1,6 +1,18 @@
+import { useAuth } from '../context/AuthContext';
 import './AppHeader.css';
 
 const AppHeader = () => {
+  const { user } = useAuth();
+
+  const initials = user?.name
+    ? user.name
+        .split(' ')
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : 'G';
+
   return (
     <header className="hero-header">
       <div className="hero-brand">
@@ -10,11 +22,11 @@ const AppHeader = () => {
 
       <div className="hero-profile-card">
         <div className="hero-profile-meta">
-          <p className="hero-profile-name">Alex Morgan</p>
-          <p className="hero-profile-role">Project Lead</p>
+          <p className="hero-profile-name">{user?.name ?? 'Guest'}</p>
+          <p className="hero-profile-role">{user?.role ?? 'No role'}</p>
         </div>
         <div className="hero-profile-avatar">
-          <span>Profile</span>
+          <span>{initials}</span>
         </div>
       </div>
     </header>

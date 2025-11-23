@@ -1,103 +1,64 @@
 import React from 'react';
 import './JobList.css';
 import Searchbar from '../component/searchbar';
+import { useJobs } from '../context/JobsContext';
 
-const jobStatus = [
-  { title: 'New Jobs', color: '#4785FC' },
-  { title: 'On Progress', color: '#f8eefe' },
-  { title: 'Reject', color: '#fff9df' },
-  { title: 'Done', color: '#eafaf1' },
-  { title: 'Canceled', color: '#ffe5e9' },
-];
-
-
-const jobs = [
-  {
-    status: 'New Jobs',
-    items: Array(4).fill({
-      title: 'Product Designer',
-      desc: 'Behance - Remote',
-      badge: 'Urgent',
-    }),
-  },
-  {
-    status: 'On Progress',
-    items: Array(4).fill({
-      title: 'React Developer',
-      desc: 'Tech Labs - Hybrid',
-      badge: 'Interview',
-    }),
-  },
-  {
-    status: 'Reject',
-    items: Array(4).fill({
-      title: 'QA Engineer',
-      desc: 'Growth Inc - Remote',
-      badge: 'Feedback',
-    }),
-  },
-  {
-    status: 'Done',
-    items: Array(4).fill({
-      title: 'Backend Lead',
-      desc: 'Finix - Onsite',
-      badge: 'Offer',
-    }),
-  },
-  {
-    status: 'Canceled',
-    items: Array(4).fill({
-      title: 'UI Specialist',
-      desc: 'Folio Tech - Hybrid',
-      badge: 'Hold',
-    }),
-  },
+const columns = [
+  { key: 'new', title: 'New Jobs', color: '#4785FC' },
+  { key: 'in_progress', title: 'On Progress', color: '#78ff53ff' },
+  { key: 'rejected', title: 'Reject', color: '#ffdc43ff' },
+  { key: 'done', title: 'Done', color: '#00ffddff' },
+  { key: 'canceled', title: 'Canceled', color: '#ff0026ff' },
 ];
 
 export default function JobList() {
+  const { jobs } = useJobs();
+
   return (
     <>
-    <div className=' mb-lg-4'>
-    <Searchbar />
-    </div>
-    <section className="joblist-board">
-    
-      <div className="board-header">
-        <div>
-          <p className="board-eyebrow">Overview</p>
-          <h1 className="board-title">Joblist</h1>
-        </div>
-        <button className="add-job-btn">+ Add new job</button>
+      <div className=" mb-lg-4">
+        <Searchbar />
       </div>
-      <div className="job-columns">
-        {jobStatus.map((status, idx) => (
-          <div className="job-column" key={status.title}>
-            <div className="job-column-head">
-              <div>
-                <p className="job-column-label">{status.title}</p>
-                <p className="job-column-count">{jobs[idx].items.length} positions</p>
-              </div>
-              <div className="job-column-dot" style={{ background: status.color }} />
-            </div>
-            <div className="job-column-cards">
-              {jobs[idx].items.map((job, i) => (
-                <article className="job-card" key={`${status.title}-${i}`}>
-                  <div className="job-card-dot" />
-                  <div className="job-card-body">
-                    <p className="job-card-title">{job.title}</p>
-                    <p className="job-card-desc">{job.desc}</p>
-                    <div className="job-card-meta">
-                      <span className="job-card-badge">{job.badge}</span>
-                      <span className="job-card-meta-text">23 candidates</span>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+      <section className="joblist-board">
+        <div className="board-header">
+          <div>
+            <p className="board-eyebrow">Overview</p>
+            <h1 className="board-title">Joblist</h1>
           </div>
-        ))}
-      </div>
-    </section>
-     </>
+          <button className="add-job-btn">+ Add new job</button>
+        </div>
+        <div className="job-columns">
+          {columns.map((column) => {
+            const jobsByStatus = jobs.filter((job) => job.status === column.key);
+            return (
+              <div className="job-column" key={column.key}>
+                <div className="job-column-head">
+                  <div>
+                    <p className="job-column-label">{column.title}</p>
+                    <p className="job-column-count">{jobsByStatus.length} positions</p>
+                  </div>
+                  <div className="job-column-dot" style={{ background: column.color }} />
+                </div>
+                <div className="job-column-cards">
+                  {jobsByStatus.map((job) => (
+                    <article className="job-card" key={job.id}>
+                      <div className="job-card-dot" />
+                      <div className="job-card-body">
+                        <p className="job-card-title">{job.id}</p>
+                        <p className="job-card-title">{job.title}</p>
+                        <p className="job-card-desc">{job.desc}</p>
+                        <div className="job-card-meta">
+                          <span className="job-card-badge">{job.badge}</span>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </>
   );
 }

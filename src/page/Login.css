@@ -75,6 +75,8 @@
   color: #8a8a8a;
 }
 
+
+
 .right-panel h2 {
   margin: 0 0 32px 0;
   font-size: 32px;
@@ -119,6 +121,13 @@
 .actions a {
   color: #666;
   text-decoration: underline;
+}
+
+.login-error {
+  margin: 4px 0 0;
+  color: #d64545;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .signin-btn {
