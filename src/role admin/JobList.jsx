@@ -1,6 +1,7 @@
 import React from 'react';
 import './JobList.css';
 import Searchbar from '../component/searchbar';
+import joblistLogo from '../../pic/joblist-logo.png';
 
 const jobStatus = [
   { title: 'New Jobs', color: '#4785FC' },
@@ -63,9 +64,12 @@ export default function JobList() {
     <section className="joblist-board">
     
       <div className="board-header">
-        <div>
-          <p className="board-eyebrow">Overview</p>
-          <h1 className="board-title">Joblist</h1>
+        <div className="board-title-group">
+          <img src={joblistLogo} alt="Joblist logo" className="board-logo" />
+          <div>
+            <p className="board-eyebrow">Overview</p>
+            <h1 className="board-title">Joblist</h1>
+          </div>
         </div>
         <button className="add-job-btn">+ Add new job</button>
       </div>
