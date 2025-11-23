@@ -4,8 +4,9 @@ import AppLayout from './layouts/AppLayOut';
 import Login from './page/Login';
 import JobList from './role admin/JobList';
 import Dashboard from './role admin/Dashboard';
-import DashboardT from './role technician/DashboardTech';
-
+import DashboardT from './role technician/TechnicianDashboard';
+// import Report from './role technician/TechnicianReport';
+import CreateWS from './role technician/AdminCreateJobPage';
 
 const RedirectToDashboard = () => <Navigate to="/dashboard" replace />;
 
@@ -19,6 +20,8 @@ function App() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<DashboardT/>} />
           <Route path="joblist" element={<JobList />} />
+          <Route path="Reports" element={<Report/>} />
+          <Route path="Create" element={<CreateWS />} />
         </Route>
         <Route path="*" element={<RedirectToDashboard />} />
       </Routes>

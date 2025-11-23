@@ -42,6 +42,16 @@ export default function AdminCreateJobPage({ initialData, onSubmit, onCancel }) 
     []
   );
 
+  const isPhoneValid = (phone) => {
+    if (!phone) return false;
+    return /^\d{9,10}$/.test(phone.trim());
+  };
+
+  const isDueDateValid = (start, due) => {
+    if (!start || !due) return true;
+    return new Date(due) >= new Date(start);
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -53,14 +63,21 @@ export default function AdminCreateJobPage({ initialData, onSubmit, onCancel }) 
     requiredFields.forEach((field) => {
       if (!form[field]) nextErrors[field] = 'จำเป็น';
     });
+    if (!isPhoneValid(form.contactPhone)) {
+      nextErrors.contactPhone = 'กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง';
+    }
+    if (!isDueDateValid(form.startDate, form.dueDate)) {
+      nextErrors.dueDate = 'กำหนดส่งต้องเป็นวันเดียวกันหรือหลังวันเริ่มต้น';
+    }
     setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+    return nextErrors;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) {
-      alert('กรุณากรอกข้อมูลที่จำเป็นให้ครบ');
+    const nextErrors = validate();
+    if (Object.keys(nextErrors).length > 0) {
+      alert(nextErrors.contactPhone || 'กรุณากรอกข้อมูลที่จำเป็นให้ครบ');
       return;
     }
     const payload = { ...form, status: 'ส่งให้ช่างแล้ว' };
@@ -70,6 +87,19 @@ export default function AdminCreateJobPage({ initialData, onSubmit, onCancel }) 
   };
 
   const handleSaveDraft = () => {
+    const phoneErrors = {};
+    if (form.contactPhone && !isPhoneValid(form.contactPhone)) {
+      phoneErrors.contactPhone = 'กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้อง';
+      setErrors((prev) => ({ ...prev, ...phoneErrors }));
+      alert(phoneErrors.contactPhone);
+      return;
+    }
+    if (form.startDate && form.dueDate && !isDueDateValid(form.startDate, form.dueDate)) {
+      const dateError = { dueDate: 'กำหนดส่งต้องเป็นวันเดียวกันหรือหลังวันเริ่มต้น' };
+      setErrors((prev) => ({ ...prev, ...dateError }));
+      alert(dateError.dueDate);
+      return;
+    }
     const payload = { ...form, status: 'Draft' };
     setForm(payload);
     onSubmit?.(payload);
@@ -92,8 +122,8 @@ export default function AdminCreateJobPage({ initialData, onSubmit, onCancel }) 
     <div className="tech-dashboard-page tech-form-page createjob-page">
       <header className="tech-form-header createjob-header">
         <div>
-          <h1>Maintenance Agreement (MA)</h1>
-          <p className="tech-subtext">สร้างใบงานซ่อมบำรุงสำหรับส่งให้ช่าง</p>
+          <h3>Maintenance Agreement (MA)</h3>
+          {/* <p className="tech-subtext">สร้างใบงานซ่อมบำรุงสำหรับส่งให้ช่าง</p> */}
         </div>
       </header>
 
@@ -163,6 +193,7 @@ export default function AdminCreateJobPage({ initialData, onSubmit, onCancel }) 
                         checked={form.priority === opt.value}
                         onChange={handleChange}
                       />
+                      <span className="priority-check">{form.priority === opt.value ? '✓' : ''}</span>
                       {opt.label}
                     </label>
                   ))}
