@@ -5,10 +5,9 @@ import AppLayout from './layouts/AppLayOut';
 import Login from './page/Login';
 import JobList from './role admin/JobList';
 import Dashboard from './role admin/Dashboard';
-import DashboardT from './role technician/DashboardTech';
-
-const RoleRedirect = () => {
-  const { user } = useAuth();
+import DashboardT from './role technician/TechnicianDashboard';
+// import Report from './role technician/TechnicianReport';
+import CreateWS from './role technician/AdminCreateJobPage';
 
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -34,25 +33,20 @@ const ProtectedLayout = ({ requiredRole }) => {
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter basename="/Techjob-27">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<RoleRedirect />} />
+    <BrowserRouter basename="/Techjob-27">
+      <Routes>
+        <Route path="/login" element={<Login />} />
 
-          <Route element={<ProtectedLayout requiredRole="admin" />}>
-            <Route path="/admin/dashboard" element={<Dashboard />} />
-            <Route path="/admin/joblist" element={<JobList />} />
-          </Route>
-
-          <Route element={<ProtectedLayout requiredRole="technician" />}>
-            <Route path="/tech/dashboard" element={<DashboardT />} />
-          </Route>
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        <Route path="/" element={<AppLayout />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardT/>} />
+          <Route path="joblist" element={<JobList />} />
+          <Route path="Reports" element={<Report/>} />
+          <Route path="Create" element={<CreateWS />} />
+        </Route>
+        <Route path="*" element={<RedirectToDashboard />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
