@@ -3,12 +3,12 @@ import AppHeader from '../component/AppHeader';
 import AppSideBar from '../component/AppSideBar';
 import './AppLayout.css';
 
-const AppLayout = () => {
+const AppLayout = ({ role }) => {
   return (
     <div className="app-shell">
-      <AppHeader />
+      <AppHeader role={role} />
       <div className="app-body">
-        <AppSideBar />
+        <AppSideBar role={role} />
         <div className="app-main">
           <div className="app-content">
             <Outlet />
