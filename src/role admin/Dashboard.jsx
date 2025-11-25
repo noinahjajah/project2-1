@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useJobs } from '../context/JobsContext';
 import './Dashboard.css';
 
 const kpis = [
@@ -23,7 +25,58 @@ const recent = [
 
 const filters = ['แผนก', 'ลูกค้า', 'Work Type', 'สถานะ', 'ช่วงเวลา'];
 
+const statusPalette = [
+  { key: 'new', label: 'New', color: '#4785FC' },
+  { key: 'in_progress', label: 'In Progress', color: '#ac7cf8' },
+  { key: 'done', label: 'Done', color: '#019b5f' },
+  { key: 'rejected', label: 'Rejected', color: '#fec667' },
+  { key: 'canceled', label: 'Canceled', color: '#fe5b48' },
+];
+
 export default function Dashboard() {
+  const { jobs } = useJobs();
+
+  const statusData = useMemo(() => {
+    const total = jobs.length;
+    let cursor = 0;
+    const segments = statusPalette.map((status) => {
+      const count = jobs.filter((job) => job.status === status.key).length;
+      const slice = total ? (count / total) * 360 : 0;
+      const start = cursor;
+      const end = cursor + slice;
+      cursor = end;
+      return {
+        ...status,
+        count,
+        start,
+        end,
+        percentage: total ? Math.round((count / total) * 100) : 0,
+      };
+    });
+
+    const gradient = segments
+      .filter((segment) => segment.count > 0)
+      .map((segment) => `${segment.color} ${segment.start}deg ${segment.end}deg`)
+      .join(', ');
+
+    return { segments, total, gradient };
+  }, [jobs]);
+
+  const departmentData = useMemo(() => {
+    const counts = jobs.reduce((acc, job) => {
+      const dep = job.department || 'ไม่ระบุแผนก';
+      acc[dep] = (acc[dep] || 0) + 1;
+      return acc;
+    }, {});
+
+    const entries = Object.entries(counts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+
+    const max = entries[0]?.count || 0;
+    return { entries, max };
+  }, [jobs]);
+
   return (
     <div className="dashboard-page">
       <section className="filter-bar">
@@ -58,7 +111,36 @@ export default function Dashboard() {
           <div className="chart-header">
             <p className="chart-title">Status Split</p>
           </div>
-          <div className="chart-placeholder">Pie Chart (New / In Progress / Completed / Late / Returned)</div>
+          <div className="chart-body pie">
+            <div className="pie-shell">
+              <div
+                className="pie-ring"
+                style={{
+                  background: statusData.total
+                    ? `conic-gradient(${statusData.gradient})`
+                    : '#f2f4f7',
+                }}
+              >
+                <div className="pie-center">
+                  <p className="pie-total">{statusData.total}</p>
+                  <span className="pie-sub">งานทั้งหมด</span>
+                </div>
+              </div>
+            </div>
+            <div className="chart-legend">
+              {statusData.segments.map((segment) => (
+                <div key={segment.key} className="legend-row">
+                  <span className="legend-dot" style={{ background: segment.color }} />
+                  <div className="legend-text">
+                    <p className="legend-label">{segment.label}</p>
+                    <p className="legend-meta">
+                      {segment.count} งาน · {segment.percentage}%
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </article>
         <article className="chart-card">
           <div className="chart-header">
@@ -68,7 +150,30 @@ export default function Dashboard() {
               <button className="filter-pill">Monthly</button>
             </div>
           </div>
-          <div className="chart-placeholder tall">Bar Chart (Dept / Customer)</div>
+          <div className="chart-body bar">
+            {departmentData.entries.length === 0 ? (
+              <p className="chart-empty">ไม่มีข้อมูลงาน</p>
+            ) : (
+              <div className="bar-list">
+                {departmentData.entries.map((row) => (
+                  <div key={row.name} className="bar-row">
+                    <p className="bar-label">{row.name}</p>
+                    <div className="bar-track">
+                      <div
+                        className="bar-fill"
+                        style={{
+                          width: departmentData.max
+                            ? `${(row.count / departmentData.max) * 100}%`
+                            : '0%',
+                        }}
+                      />
+                    </div>
+                    <span className="bar-count">{row.count}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </article>
       </section>
 

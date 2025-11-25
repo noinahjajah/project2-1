@@ -8,7 +8,12 @@ const adminNav = [
   { label: 'Joblist', to: '/admin/joblist', badge: null },
 ];
 
-const techNav = [{ label: 'Dashboard', to: '/tech/dashboard', badge: null }];
+const techNav = [
+  { label: 'Dashboard', to: '/tech/dashboard', badge: null },
+  { label: 'Create Job', to: '/tech/create-job', badge: null },
+  { label: 'Work Sheet', to: '/tech/work-sheet', badge: null },
+  { label: 'Print Work Sheet', to: '/tech/work-sheet/print', badge: null },
+];
 
 const AppSideBar = ({ role }) => {
   const navItems = role === 'technician' ? techNav : adminNav;
