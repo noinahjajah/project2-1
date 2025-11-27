@@ -95,7 +95,7 @@
 }
 
 .kpi-card:first-child {
-  background: linear-gradient(145deg, #1C2632, #6B4EFF);
+  background: linear-gradient(145deg, #1C2632, #4785FC);
   color: #fff;
   box-shadow: 0 12px 24px rgba(13, 71, 161, 0.28);
   border-color: transparent;
@@ -168,7 +168,7 @@
 }
 
 .chart-card.work-by {
-  background: linear-gradient(0deg, #1c2632 0%, #6B4EFF 100%);
+  background: linear-gradient(0deg, #1c2632 0%, #4785fc 100%);
   border: none;
   color: #fff;
   box-shadow: 0 16px 28px rgba(28, 38, 50, 0.35);
@@ -322,7 +322,7 @@
 .bar-fill {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #6B4EFF, #8db9ff);
+  background: linear-gradient(90deg, #4785fc, #8db9ff);
   border-radius: inherit;
 }
 
@@ -458,7 +458,7 @@
   padding: 8px 14px;
   border-radius: 10px;
   border: none;
-  background: #6B4EFF;
+  background: #4785FC;
   color: #fff;
   cursor: pointer;
 }

@@ -12,8 +12,10 @@ import TechnicianWorkSheetPrint from './role technician/TechnicianWorkSheetPrint
 import JobDetail from './role admin/JobDetail';
 import Typejob from './role admin/Typejob';
 import Settings from './role admin/Settings';
+import SettingsCreateUser from './role admin/SettingsCreateUser';
 import ExecDashboard from './role executive/ExecDashboard';
 import ExecSettings from './role executive/ExecSettings';
+import SuperDashboard from './role supervisor/SuperDashboard';
 
 const RoleRedirect = () => {
   const { user } = useAuth();
@@ -25,6 +27,7 @@ const RoleRedirect = () => {
   let target = '/admin/dashboard';
   if (user.role === 'technician') target = '/tech/dashboard';
   if (user.role === 'executive') target = '/executive/dashboard';
+  if (user.role === 'supervisor') target = '/supervisor/dashboard';
   return <Navigate to={target} replace />;
 };
 
@@ -57,6 +60,7 @@ function App() {
             <Route path="/admin/create-job" element={<Typejob />} />
             <Route path="/admin/create-job/ma" element={<AdminCreateJobPage />} />
             <Route path="/admin/settings" element={<Settings />} />
+            <Route path="/admin/settings/new" element={<SettingsCreateUser />} />
           </Route>
 
           <Route element={<ProtectedLayout requiredRole="technician" />}>
@@ -69,6 +73,10 @@ function App() {
           <Route element={<ProtectedLayout requiredRole="executive" />}>
             <Route path="/executive/dashboard" element={<ExecDashboard />} />
             <Route path="/executive/settings" element={<ExecSettings />} />
+          </Route>
+
+          <Route element={<ProtectedLayout requiredRole="supervisor" />}>
+            <Route path="/supervisor/dashboard" element={<SuperDashboard />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

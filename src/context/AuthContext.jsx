@@ -21,6 +21,12 @@ const USERS = [
     role: 'executive',
     name: 'Executive User',
   },
+  {
+    username: 'sup-01',
+    password: 'sup123',
+    role: 'supervisor',
+    name: 'Supervisor sup-01',
+  },
 ];
 
 export const AuthProvider = ({ children }) => {

@@ -15,6 +15,8 @@ const Login = () => {
       const target =
         user.role === 'technician'
           ? '/tech/dashboard'
+          : user.role === 'supervisor'
+          ? '/supervisor/dashboard'
           : user.role === 'executive'
           ? '/executive/dashboard'
           : '/admin/dashboard';
@@ -31,6 +33,8 @@ const Login = () => {
       const target =
         nextUser.role === 'technician'
           ? '/tech/dashboard'
+          : nextUser.role === 'supervisor'
+          ? '/supervisor/dashboard'
           : nextUser.role === 'executive'
           ? '/executive/dashboard'
           : '/admin/dashboard';
