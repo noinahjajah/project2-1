@@ -7,6 +7,178 @@
   min-height: calc(100vh - 260px);
 }
 
+.joblist-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.search-box {
+  display: flex;
+  flex: 1;
+  max-width: 520px;
+
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  padding: 12px;
+  font-size: 1rem;
+}
+
+.search-input:focus {
+  outline: none;
+}
+
+
+.toolbar-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  min-width: 140px;
+  padding: 10px 12px;
+  border: 2px solid #4b6cfa;
+  background: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  color: #1f2a44;
+}
+
+.dropdown-card {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 240px;
+  background: #fff;
+  border: 2px solid #4b6cfa;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  padding: 12px;
+  z-index: 10;
+  display: grid;
+  gap: 10px;
+}
+
+.filter-card {
+  width: 320px;
+  grid-auto-rows: auto;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #344054;
+}
+
+.chevron {
+  border: solid #1f2a44;
+  border-width: 0 2px 2px 0;
+  display: inline-block;
+  padding: 4px;
+  transform: rotate(45deg);
+  margin-left: 6px;
+}
+
+.chevron.up {
+  transform: rotate(-135deg);
+}
+
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  color: #1f2a44;
+}
+
+.filter-field {
+  display: grid;
+  gap: 6px;
+}
+
+.filter-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.filter-row.two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.input-group {
+  display: grid;
+  gap: 4px;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.input-group input,
+.filter-field input,
+.filter-field select {
+  width: 100%;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+}
+
+.link-reset {
+  background: none;
+  border: none;
+  color: #4b6cfa;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.btn-reset {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #d0d5dd;
+  background: #f2f4f7;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.btn-apply {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: #4b6cfa;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
 .board-header {
   display: flex;
   align-items: center;
@@ -40,10 +212,42 @@
   box-shadow: 0 10px 22px rgba(75, 108, 250, 0.24);
 }
 
+.job-columns-wrap {
+  position: relative;
+}
+
+.page-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border: none;
+  width: 34px;
+  height: 64px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  opacity: 0.9;
+}
+
+.page-button.left {
+  left: -4px;
+}
+
+.page-button.right {
+  right: -4px;
+}
+
 .job-columns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
   gap: 12px;
+  overflow: hidden;
 }
 
 .job-column {
@@ -53,32 +257,17 @@
   flex-direction: column;
   gap: 12px;
   border: 2px solid transparent;
+  min-width: 220px;
 }
 
-.job-column:nth-child(1) {
-  background: #e6f1ff;
-  border-color: #4785FC
+.job-column.placeholder {
+  background: #f8fafc;
+  border-color: #e4e7ec;
+  opacity: 0.4;
 }
 
-
-.job-column:nth-child(2) {
-  background: #eee6ff;
-  border-color: #a855f7;
-}
-
-.job-column:nth-child(3) {
-  background: #fff1d6;
-  border-color: #f59e0b;
-}
-
-.job-column:nth-child(4) {
-  background: #dff3e6;
-  border-color: #16a34a;
-}
-
-.job-column:nth-child(5) {
-  background: #ffe1e1;
-  border-color: #ef4444;
+.placeholder-body {
+  flex: 1;
 }
 
 .job-column-head {

@@ -1,46 +1,117 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useJobs } from '../context/JobsContext';
 import './Dashboard.css';
 
-const kpis = [
-  { label: 'Total Work Orders', value: '123', delta: '+8% vs last week' },
-  { label: 'New This Week', value: '12', delta: '+3 from avg' },
-  { label: 'In Progress', value: '34', delta: '5 overdue' },
-  { label: 'Completed', value: '87', delta: '+14 closed' },
-  { label: 'Late', value: '5', delta: '2 critical' },
-  { label: 'Returned / Rejected', value: '3', delta: '-1 vs last week' },
-];
-
-const tasks = [
-  { id: 'WO-1023', customer: 'ACME Corp', due: 'วันนี้', priority: 'สูง', status: 'รอ assign' },
-  { id: 'WO-1024', customer: 'Beta Ltd', due: 'วันนี้', priority: 'กลาง', status: 'ติดตาม' },
-  { id: 'WO-1018', customer: 'Delta Co', due: 'ค้างส่งมอบ', priority: 'สูง', status: 'ค้างส่งมอบ' },
-];
-
-const recent = [
-  { id: 'WO-1044', customer: 'ACME', tech: 'Somchai, Nui', priority: 'สูง', status: 'กำลังทำ', updated: '10:45' },
-  { id: 'WO-1043', customer: 'Beta', tech: 'Fern', priority: 'กลาง', status: 'ใหม่', updated: '10:20' },
-  { id: 'WO-1042', customer: 'Delta', tech: 'Team A', priority: 'ต่ำ', status: 'เสร็จสิ้น', updated: '09:50' },
-];
-
-const filters = ['แผนก', 'ลูกค้า', 'Work Type', 'สถานะ', 'ช่วงเวลา'];
-
 const statusPalette = [
-  { key: 'new', label: 'New', color: '#4785FC' },
-  { key: 'in_progress', label: 'In Progress', color: '#ac7cf8' },
-  { key: 'done', label: 'Done', color: '#019b5f' },
-  { key: 'rejected', label: 'Rejected', color: '#fec667' },
-  { key: 'canceled', label: 'Canceled', color: '#fe5b48' },
+  { key: 'new', label: 'New', color: '#1c2632' },
+  { key: 'in_progress', label: 'In Progress', color: '#2b3b52' },
+  { key: 'done', label: 'Done', color: '#3d5d8e' },
+  { key: 'rejected', label: 'Rejected', color: '#4d78cf' },
+  { key: 'canceled', label: 'Canceled', color: '#4785fc' },
 ];
+
+const formatNumber = (value) => value.toLocaleString('th-TH');
+const formatShortDate = (value) => {
+  if (!value) return '-';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '-';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
 
 export default function Dashboard() {
   const { jobs } = useJobs();
+  const navigate = useNavigate();
+  const [filters, setFilters] = useState({
+    department: 'all',
+    customer: 'all',
+    type: 'all',
+    status: 'all',
+    range: 'week',
+  });
+
+  const filterOptions = useMemo(() => {
+    const departments = new Set();
+    const customers = new Set();
+    const types = new Set();
+    jobs.forEach((job) => {
+      if (job.department) departments.add(job.department);
+      if (job.customer) customers.add(job.customer);
+      if (job.type) types.add(job.type);
+    });
+    return {
+      department: ['all', ...Array.from(departments)],
+      customer: ['all', ...Array.from(customers)],
+      type: ['all', ...Array.from(types)],
+      status: ['all', ...statusPalette.map((s) => s.key)],
+    };
+  }, [jobs]);
+
+  const filteredJobs = useMemo(() => {
+    const now = new Date();
+    const rangeStart = (() => {
+      if (filters.range === 'week') return new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      if (filters.range === 'month') return new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+      if (filters.range === 'year') return new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      return null;
+    })();
+
+    return jobs.filter((job) => {
+      const matchDepartment = filters.department === 'all' || job.department === filters.department;
+      const matchCustomer = filters.customer === 'all' || job.customer === filters.customer;
+      const matchType = filters.type === 'all' || job.type === filters.type;
+      const matchStatus = filters.status === 'all' || job.status === filters.status;
+      const matchRange =
+        !rangeStart ||
+        !job.openedAt ||
+        (new Date(job.openedAt).getTime() >= rangeStart.getTime());
+      return matchDepartment && matchCustomer && matchType && matchStatus && matchRange;
+    });
+  }, [filters, jobs]);
+
+  const kpiCards = useMemo(() => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const counts = filteredJobs.reduce(
+      (acc, job) => {
+        acc.total += 1;
+        acc[job.status] = (acc[job.status] || 0) + 1;
+
+        const openedAt = job.openedAt ? new Date(job.openedAt) : null;
+        if (openedAt && openedAt >= sevenDaysAgo) {
+          acc.newThisWeek += 1;
+        }
+
+        const due = job.dueDate ? new Date(job.dueDate) : null;
+        const isClosed = job.status === 'done' || job.status === 'canceled' || job.status === 'rejected';
+        if (due && due < now && !isClosed) {
+          acc.late += 1;
+        }
+        return acc;
+      },
+      { total: 0, new: 0, newThisWeek: 0, in_progress: 0, done: 0, rejected: 0, canceled: 0, late: 0 },
+    );
+
+    return [
+      { label: 'Total Work Orders', value: formatNumber(counts.total), delta: `${formatNumber(counts.newThisWeek)} opened this week` },
+      { label: 'New This Week', value: formatNumber(counts.newThisWeek), delta: `${formatNumber(counts.new)} currently new` },
+      { label: 'In Progress', value: formatNumber(counts.in_progress), delta: `${formatNumber(counts.late)} overdue` },
+      { label: 'Completed', value: formatNumber(counts.done), delta: `${formatNumber(counts.canceled)} canceled` },
+      { label: 'Late', value: formatNumber(counts.late), delta: `Due date passed` },
+      { label: 'Returned / Rejected', value: formatNumber(counts.rejected), delta: `${formatNumber(counts.new)} new awaiting fix` },
+      { label: 'Canceled', value: formatNumber(counts.canceled), delta: `Total canceled` },
+    ];
+  }, [filteredJobs]);
 
   const statusData = useMemo(() => {
-    const total = jobs.length;
+    const total = filteredJobs.length;
     let cursor = 0;
     const segments = statusPalette.map((status) => {
-      const count = jobs.filter((job) => job.status === status.key).length;
+      const count = filteredJobs.filter((job) => job.status === status.key).length;
       const slice = total ? (count / total) * 360 : 0;
       const start = cursor;
       const end = cursor + slice;
@@ -60,10 +131,10 @@ export default function Dashboard() {
       .join(', ');
 
     return { segments, total, gradient };
-  }, [jobs]);
+  }, [filteredJobs]);
 
   const departmentData = useMemo(() => {
-    const counts = jobs.reduce((acc, job) => {
+    const counts = filteredJobs.reduce((acc, job) => {
       const dep = job.department || 'ไม่ระบุแผนก';
       acc[dep] = (acc[dep] || 0) + 1;
       return acc;
@@ -75,27 +146,119 @@ export default function Dashboard() {
 
     const max = entries[0]?.count || 0;
     return { entries, max };
-  }, [jobs]);
+  }, [filteredJobs]);
+
+  const pendingTasks = useMemo(() => {
+    const openStatuses = new Set(['new', 'in_progress', 'rejected']);
+    return filteredJobs
+      .filter((job) => openStatuses.has(job.status))
+      .sort((a, b) => {
+        const aDue = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+        const bDue = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+        return aDue - bDue;
+      })
+      .slice(0, 5);
+  }, [filteredJobs]);
+
+  const recentOrders = useMemo(
+    () =>
+      [...filteredJobs]
+        .sort((a, b) => {
+          const aOpen = a.openedAt ? new Date(a.openedAt).getTime() : 0;
+          const bOpen = b.openedAt ? new Date(b.openedAt).getTime() : 0;
+          return bOpen - aOpen;
+        })
+        .slice(0, 5),
+    [filteredJobs],
+  );
 
   return (
     <div className="dashboard-page">
       <section className="filter-bar">
         <div className="filter-group">
-          {filters.map((f) => (
-            <button key={f} className="filter-chip">
-              {f} ▼
-            </button>
-          ))}
+          <div className="filter-field">
+            <span className="filter-label">แผนก</span>
+            <select
+              className="filter-select"
+              value={filters.department}
+              onChange={(e) => setFilters((prev) => ({ ...prev, department: e.target.value }))}
+            >
+              {filterOptions.department.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt === 'all' ? 'ทั้งหมด' : opt}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="filter-field">
+            <span className="filter-label">ลูกค้า</span>
+            <select
+              className="filter-select"
+              value={filters.customer}
+              onChange={(e) => setFilters((prev) => ({ ...prev, customer: e.target.value }))}
+            >
+              {filterOptions.customer.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt === 'all' ? 'ทั้งหมด' : opt}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="filter-field">
+            <span className="filter-label">Work Type</span>
+            <select
+              className="filter-select"
+              value={filters.type}
+              onChange={(e) => setFilters((prev) => ({ ...prev, type: e.target.value }))}
+            >
+              {filterOptions.type.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt === 'all' ? 'ทั้งหมด' : opt}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="filter-field">
+            <span className="filter-label">สถานะ</span>
+            <select
+              className="filter-select"
+              value={filters.status}
+              onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
+            >
+              {filterOptions.status.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt === 'all'
+                    ? 'ทั้งหมด'
+                    : statusPalette.find((s) => s.key === opt)?.label || opt}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="filter-range">
-          <button className="filter-pill active">Week</button>
-          <button className="filter-pill">Month</button>
-          <button className="filter-pill">Year</button>
+          <button
+            className={`filter-pill ${filters.range === 'week' ? 'active' : ''}`}
+            onClick={() => setFilters((prev) => ({ ...prev, range: 'week' }))}
+          >
+            Week
+          </button>
+          <button
+            className={`filter-pill ${filters.range === 'month' ? 'active' : ''}`}
+            onClick={() => setFilters((prev) => ({ ...prev, range: 'month' }))}
+          >
+            Month
+          </button>
+          <button
+            className={`filter-pill ${filters.range === 'year' ? 'active' : ''}`}
+            onClick={() => setFilters((prev) => ({ ...prev, range: 'year' }))}
+          >
+            Year
+          </button>
         </div>
       </section>
 
       <section className="kpi-grid">
-        {kpis.map((kpi) => (
+        {kpiCards.map((kpi) => (
           <article key={kpi.label} className="kpi-card">
             <p className="kpi-label">{kpi.label}</p>
             <div className="kpi-value-row">
@@ -121,10 +284,6 @@ export default function Dashboard() {
                     : '#f2f4f7',
                 }}
               >
-                <div className="pie-center">
-                  <p className="pie-total">{statusData.total}</p>
-                  <span className="pie-sub">งานทั้งหมด</span>
-                </div>
               </div>
             </div>
             <div className="chart-legend">
@@ -142,33 +301,31 @@ export default function Dashboard() {
             </div>
           </div>
         </article>
-        <article className="chart-card">
+        <article className="chart-card work-by">
           <div className="chart-header">
-            <p className="chart-title">Work by Department / Customer</p>
-            <div className="chart-toggle">
-              <button className="filter-pill active">Weekly</button>
-              <button className="filter-pill">Monthly</button>
-            </div>
+            <p className="chart-title">Work by Department</p>
           </div>
           <div className="chart-body bar">
             {departmentData.entries.length === 0 ? (
               <p className="chart-empty">ไม่มีข้อมูลงาน</p>
             ) : (
-              <div className="bar-list">
+              <div className="candle-grid">
                 {departmentData.entries.map((row) => (
-                  <div key={row.name} className="bar-row">
-                    <p className="bar-label">{row.name}</p>
-                    <div className="bar-track">
-                      <div
-                        className="bar-fill"
-                        style={{
-                          width: departmentData.max
-                            ? `${(row.count / departmentData.max) * 100}%`
-                            : '0%',
-                        }}
-                      />
+                  <div
+                    key={row.name}
+                    className="candle-item"
+                    style={{
+                      '--candle-height': departmentData.max
+                        ? `${Math.max((row.count / departmentData.max) * 100, 8)}%`
+                        : '8%',
+                    }}
+                  >
+                    <div className="candle">
+                      <div className="candle-wick" />
+                      <div className="candle-body" />
                     </div>
-                    <span className="bar-count">{row.count}</span>
+                    <p className="candle-label">{row.name}</p>
+                    <span className="candle-count">{row.count}</span>
                   </div>
                 ))}
               </div>
@@ -180,25 +337,49 @@ export default function Dashboard() {
       <section className="two-column">
         <article className="panel">
           <div className="panel-header">
-            <p className="panel-title">Today’s Tasks / Action Items</p>
+            <p className="panel-title">
+              Today’s Tasks / Action Items ({pendingTasks.length})
+            </p>
           </div>
           <div className="task-list">
-            {tasks.map((task) => (
-              <div key={task.id} className="task-row">
-                <div className="task-meta">
-                  <p className="task-id">{task.id}</p>
-                  <p className="task-customer">{task.customer}</p>
+            {pendingTasks.length === 0 ? (
+              <p className="chart-empty">ไม่มีงานค้าง</p>
+            ) : (
+              pendingTasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="task-row"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/admin/job/${encodeURIComponent(task.id)}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/admin/job/${encodeURIComponent(task.id)}`);
+                    }
+                  }}
+                >
+                  <div className="task-meta">
+                    <p className="task-id">{task.id}</p>
+                    <p className="task-customer">{task.customer || '-'}</p>
+                  </div>
+                  <div className="task-info">
+                    <span className="badge">{task.status}</span>
+                    <span className={`badge ${task.priority?.includes('สูง') ? 'danger' : ''}`}>
+                      Priority: {task.priority || '-'}
+                    </span>
+                  </div>
+                  <button
+                    className="duedate"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    กำหนดส่ง: {formatShortDate(task.dueDate)}
+                  </button>
                 </div>
-                <div className="task-info">
-                  <span className="badge">{task.status}</span>
-                  <span className="badge neutral">กำหนดส่ง: {task.due}</span>
-                  <span className={`badge ${task.priority === 'สูง' ? 'danger' : ''}`}>
-                    Priority: {task.priority}
-                  </span>
-                </div>
-                <button className="assign-btn">Assign to Technician</button>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </article>
 
@@ -207,42 +388,37 @@ export default function Dashboard() {
             <p className="panel-title">Recent Work Orders</p>
           </div>
           <div className="recent-list">
-            {recent.map((item) => (
-              <div key={item.id} className="recent-row">
-                <div className="recent-main">
-                  <p className="task-id">{item.id}</p>
-                  <p className="task-customer">{item.customer}</p>
-                  <p className="recent-tech">Tech: {item.tech}</p>
+            {recentOrders.length === 0 ? (
+              <p className="chart-empty">ยังไม่มีข้อมูลงานล่าสุด</p>
+            ) : (
+              recentOrders.map((item) => (
+                <div
+                  key={item.id}
+                  className="recent-row"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/admin/job/${encodeURIComponent(item.id)}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/admin/job/${encodeURIComponent(item.id)}`);
+                    }
+                  }}
+                >
+                  <div className="recent-main">
+                    <p className="task-id">{item.id}</p>
+                    <p className="task-customer">{item.customer || '-'}</p>
+                    <p className="recent-tech">ประเภท: {item.type || '-'}</p>
+                  </div>
+                  <div className="recent-meta">
+                    <span className="badge neutral">Priority: {item.priority || '-'}</span>
+                    <span className="badge">{item.status}</span>
+                    <span className="timestamp">เปิดงาน: {formatShortDate(item.openedAt)}</span>
+                  </div>
                 </div>
-                <div className="recent-meta">
-                  <span className="badge neutral">Priority: {item.priority}</span>
-                  <span className="badge">{item.status}</span>
-                  <span className="timestamp">{item.updated}</span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
-        </article>
-      </section>
-
-      <section className="bottom-row">
-        <article className="panel shortcuts">
-          <p className="panel-title">Shortcuts</p>
-          <div className="shortcut-grid">
-            <button className="shortcut-btn">เปิดใบงานใหม่</button>
-            <button className="shortcut-btn">จัดการสมาชิก</button>
-            <button className="shortcut-btn">ตั้งค่าระบบ</button>
-            <button className="shortcut-btn">ออกรายงาน (PDF)</button>
-          </div>
-        </article>
-
-        <article className="panel notes">
-          <p className="panel-title">Notes / System Messages</p>
-          <ul className="notes-list">
-            <li>Alert: 3 jobs overdue today.</li>
-            <li>ประกาศ: ระบบจะปิดปรับปรุง 22:00-23:00</li>
-            <li>Note: ACME ขอเลื่อนนัดเป็นพรุ่งนี้</li>
-          </ul>
         </article>
       </section>
     </div>

@@ -7,7 +7,7 @@
 
 .job-detail-back {
   border: 1px solid #5c6fdd;
-  background: #5c6fdd;
+  background: #4785FC;
   color: #0f172a;
   padding: 8px 12px;
   border-radius: 10px;
@@ -215,6 +215,32 @@
   font-weight: 700;
   cursor: pointer;
   width: 100%;
+}
+
+.worklog-photo {
+  margin-top: 10px;
+}
+
+.worklog-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.worklog-photo-box {
+  margin-top: 6px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.worklog-img {
+  max-width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
 }
 
 @media (max-width: 900px) {
