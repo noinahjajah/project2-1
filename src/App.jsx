@@ -16,6 +16,8 @@ import SettingsCreateUser from './role admin/SettingsCreateUser';
 import ExecDashboard from './role executive/ExecDashboard';
 import ExecSettings from './role executive/ExecSettings';
 import SuperDashboard from './role supervisor/SuperDashboard';
+import SuperSettings from './role supervisor/SuperSettings';
+import SuperJobList from './role supervisor/SuperJobList';
 
 const RoleRedirect = () => {
   const { user } = useAuth();
@@ -77,6 +79,8 @@ function App() {
 
           <Route element={<ProtectedLayout requiredRole="supervisor" />}>
             <Route path="/supervisor/dashboard" element={<SuperDashboard />} />
+            <Route path="/supervisor/settings" element={<SuperSettings />} />
+            <Route path="/supervisor/joblist" element={<SuperJobList />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
