@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './JobList.css';
 import { useJobs } from '../context/JobsContext';
+import { usePeople } from '../context/PeopleContext';
 import { useNavigate } from 'react-router-dom';
 
 const columns = [
@@ -15,6 +16,7 @@ const columns = [
 
 export default function JobList() {
   const { jobs } = useJobs();
+  const { technicians: peopleTechs, getTechniciansByIds } = usePeople();
   const navigate = useNavigate();
   const [hoveredJob, setHoveredJob] = useState(null);
   const hoverTimer = useRef(null);
@@ -29,15 +31,13 @@ export default function JobList() {
     supervisor: '',
     technician: '',
   });
+  const columnsRef = useRef(null);
   const [page, setPage] = useState(0);
 
-  const technicianOptions = useMemo(() => {
-    const names = new Set();
-    jobs.forEach((job) => {
-      job.technicians?.forEach((t) => names.add(t.name));
-    });
-    return Array.from(names);
-  }, [jobs]);
+  const technicianOptions = useMemo(
+    () => peopleTechs.map((t) => t.name).filter(Boolean),
+    [peopleTechs],
+  );
 
   const filteredJobs = useMemo(() => {
     const matchDateRange = (job) => {
@@ -65,11 +65,16 @@ export default function JobList() {
       );
     };
 
-    const matchType = filters.type === 'all' || job.type === filters.type;
-    const matchSupervisor = !filters.supervisor || (job.supervisorCloseName || '').toLowerCase().includes(filters.supervisor.toLowerCase());
-    const matchTechnician =
-      !filters.technician ||
-      (job.technicians || []).some((t) => t.name.toLowerCase().includes(filters.technician.toLowerCase()));
+    const matchType = (job) => filters.type === 'all' || job.type === filters.type;
+    const matchSupervisor = (job) =>
+      !filters.supervisor ||
+      (job.supervisorCloseName || '').toLowerCase().includes(filters.supervisor.toLowerCase());
+    const matchTechnician = (job) => {
+      if (!filters.technician) return true;
+      const techs = getTechniciansByIds(job.technicians || []);
+      const q = filters.technician.toLowerCase();
+      return techs.some((t) => (t?.name || '').toLowerCase().includes(q));
+    };
 
     const sortFns = [];
     if (sortFields.date) {
@@ -83,7 +88,12 @@ export default function JobList() {
     }
 
     const result = jobs.filter(
-      (job) => matchDateRange(job) && matchSearch(job) && matchType && matchSupervisor && matchTechnician,
+      (job) =>
+        matchDateRange(job) &&
+        matchSearch(job) &&
+        matchType(job) &&
+        matchSupervisor(job) &&
+        matchTechnician(job),
     );
 
     if (sortFns.length) {
@@ -97,7 +107,7 @@ export default function JobList() {
     }
 
     return result;
-  }, [filters, jobs, search, sortFields]);
+  }, [filters, getTechniciansByIds, jobs, search, sortFields]);
 
   const handleHoverStart = (job, color) => {
     hoverTimer.current = setTimeout(() => {
@@ -114,22 +124,8 @@ export default function JobList() {
   };
 
   const pageSize = 4;
-  const paddedColumns = useMemo(() => {
-    const out = [...columns];
-    while (out.length % pageSize !== 0) {
-      out.push({
-        key: `placeholder-${out.length}`,
-        title: '',
-        color: '#e5e7eb',
-        hover: '#e5e7eb',
-        placeholder: true,
-      });
-    }
-    return out;
-  }, []);
-
-  const maxPage = Math.max(Math.ceil(paddedColumns.length / pageSize) - 1, 0);
-  const visibleColumns = paddedColumns.slice(page * pageSize, page * pageSize + pageSize);
+  const maxPage = Math.max(Math.ceil(columns.length / pageSize) - 1, 0);
+  const visibleColumns = columns.slice(page * pageSize, page * pageSize + pageSize);
 
   useEffect(() => {
     setPage((prev) => Math.min(prev, maxPage));
@@ -197,7 +193,7 @@ export default function JobList() {
                       setFilters({ from: '', to: '', type: 'all', supervisor: '', technician: '' })
                     }
                   >
-                    Reset
+                   
                   </button>
                 </div>
                 <div className="filter-field">
@@ -343,50 +339,44 @@ export default function JobList() {
               const jobsByStatus = filteredJobs.filter((job) => job.status === column.key);
               return (
                 <div
-                  className={`job-column ${column.placeholder ? 'placeholder' : ''}`}
+                  className="job-column"
                   key={column.key}
                   style={{ borderColor: column.color, background: `${column.color}1A` }}
                 >
-                  {column.placeholder ? (
-                    <div className="placeholder-body" />
-                  ) : (
-                    <>
-                      <div className="job-column-head">
-                        <div>
-                          <p className="job-column-label">{column.title}</p>
-                          <p className="job-column-count">{jobsByStatus.length} positions</p>
+                  <div className="job-column-head">
+                    <div>
+                      <p className="job-column-label">{column.title}</p>
+                      <p className="job-column-count">{jobsByStatus.length} positions</p>
+                    </div>
+                    <div className="job-column-dot" style={{ background: column.color }} />
+                  </div>
+                  <div className="job-column-cards">
+                    {jobsByStatus.map((job) => (
+                      <article
+                        className="job-card"
+                        key={job.id}
+                        style={{ '--card-hover': column.hover, '--card-border': column.color }}
+                        onMouseEnter={() => handleHoverStart(job, column.color)}
+                        onMouseLeave={handleHoverEnd}
+                      >
+                        {/* <div className="job-card-dot" /> */}
+                        <div className="job-card-body">
+                          <p className="job-card-title">{job.id}</p>
+                          <p className="job-card-title">{job.title}</p>
+                          <p className="job-card-desc">{job.desc}</p>
+                          <div className="job-card-meta">
+                            <span className="job-card-badge">{job.badge}</span>
+                          </div>
                         </div>
-                        <div className="job-column-dot" style={{ background: column.color }} />
-                      </div>
-                      <div className="job-column-cards">
-                        {jobsByStatus.map((job) => (
-                          <article
-                            className="job-card"
-                            key={job.id}
-                            style={{ '--card-hover': column.hover, '--card-border': column.color }}
-                            onMouseEnter={() => handleHoverStart(job, column.color)}
-                            onMouseLeave={handleHoverEnd}
-                          >
-                            {/* <div className="job-card-dot" /> */}
-                            <div className="job-card-body">
-                              <p className="job-card-title">{job.id}</p>
-                              <p className="job-card-title">{job.title}</p>
-                              <p className="job-card-desc">{job.desc}</p>
-                              <div className="job-card-meta">
-                                <span className="job-card-badge">{job.badge}</span>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              className="job-card-link"
-                              onClick={() => navigate(`/admin/job/${encodeURIComponent(job.id)}`)}
-                            >
-                            </button>
-                          </article>
-                        ))}
-                      </div>
-                    </>
-                  )}
+                        <button
+                          type="button"
+                          className="job-card-link"
+                          onClick={() => navigate(`/admin/job/${encodeURIComponent(job.id)}`)}
+                        >
+                        </button>
+                      </article>
+                    ))}
+                  </div>
                 </div>
               );
             })}
